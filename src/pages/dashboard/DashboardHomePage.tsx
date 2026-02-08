@@ -1,6 +1,6 @@
 import { useAppSelector } from "@/app/store/store";
 import { useCurrentUsage } from "@/hooks";
-import { PageHeader, StatsCard } from "@/components/common";
+import { PageHeader } from "@/components/common";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -8,9 +8,7 @@ import {
   Image,
   HardDrive,
   Activity,
-  TrendingUp,
   ArrowUp,
-  ArrowDown,
   Key,
 } from "lucide-react";
 import {

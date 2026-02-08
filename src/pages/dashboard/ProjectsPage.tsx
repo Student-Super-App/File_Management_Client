@@ -8,13 +8,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -389,7 +382,7 @@ export function ProjectsPage() {
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Max File Size:</span>
                       <span className="font-medium">
-                        {(project.maxFileSizeBytes / 1024 / 1024).toFixed(0)} MB
+                        {project.maxFileSizeBytes ? (project.maxFileSizeBytes / 1024 / 1024).toFixed(0) : 'N/A'} MB
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">

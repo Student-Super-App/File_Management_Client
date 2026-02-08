@@ -1,4 +1,4 @@
-import { useBillingInfo, useInvoices } from "@/hooks";
+import { useInvoices } from "@/hooks";
 import { PageHeader } from "@/components/common";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

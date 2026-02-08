@@ -4,9 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import {
-  HardDrive,
-  Activity,
-  Zap,
   Download,
   TrendingUp,
   TrendingDown,
