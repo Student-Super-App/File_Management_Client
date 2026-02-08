@@ -1,0 +1,1480 @@
+{
+  "info": {
+    "_postman_id": "4c8bd7d3-b0b9-4d03-b21b-9c2b09d1d049",
+    "name": "File Management Service API",
+    "description": "Complete API collection for the File Management Service - A SaaS platform providing secure presigned upload URLs and media delivery.\n\n## Authentication\n\n### Dashboard APIs (JWT)\n- Register/Login to get a JWT token\n- Use the token in the `Authorization: Bearer <token>` header\n- Used for: Auth, API Keys, Projects, Usage, Billing\n\n### Upload/Asset APIs (API Key)\n- Create an API Key from the dashboard\n- Use the key in the `X-API-Key` header\n- Used for: Uploads, Assets\n\n## Security\n- AWS credentials are NEVER exposed to clients\n- Only presigned URLs are returned\n- API keys are hashed with SHA-256\n\n## Total Endpoints: 39",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "32763346",
+    "_collection_link": "https://go.postman.co/collection/32763346-4c8bd7d3-b0b9-4d03-b21b-9c2b09d1d049?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "00. Health & Info",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Check if the service is running and healthy.\n\n**Authentication:** None required\n\n**Route:** `GET /health`"
+          },
+          "response": []
+        },
+        {
+          "name": "API Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                ""
+              ]
+            },
+            "description": "Get API information and available endpoints.\n\n**Authentication:** None required\n\n**Route:** `GET /`"
+          },
+          "response": []
+        }
+      ],
+      "description": "Service health check and API information endpoints\n\n**Total: 2 endpoints**"
+    },
+    {
+      "name": "01. Auth (JWT)",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.token) {",
+                  "        pm.collectionVariables.set('jwtToken', jsonData.data.token);",
+                  "        console.log('JWT Token saved to collection variables');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"SecurePassword123!\",\n  \"name\": \"John Doe\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Register a new user account.\n\n**Authentication:** None required\n\n**Route:** `POST /auth/register`\n\n**Request Body:**\n- `email` (required): Valid email address\n- `password` (required): Minimum 8 characters\n- `name` (required): User's display name\n\n**Response:** Returns user object and JWT token"
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.token) {",
+                  "        pm.collectionVariables.set('jwtToken', jsonData.data.token);",
+                  "        console.log('JWT Token saved to collection variables');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"SecurePassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Login with email and password.\n\n**Authentication:** None required\n\n**Route:** `POST /auth/login`\n\n**Request Body:**\n- `email` (required): Registered email address\n- `password` (required): Account password\n\n**Response:** Returns user object and JWT token (valid for 7 days)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Current User (me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Get the currently authenticated user's profile.\n\n**Authentication:** JWT Bearer Token required\n\n**Route:** `GET /auth/me`"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Current User (me)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Updated\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Update the current user's profile.\n\n**Authentication:** JWT Bearer Token required\n\n**Route:** `PATCH /auth/me`\n\n**Request Body:**\n- `name` (optional): Updated display name"
+          },
+          "response": []
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"SecurePassword123!\",\n  \"newPassword\": \"NewSecurePassword456!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/change-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "change-password"
+              ]
+            },
+            "description": "Change the current user's password.\n\n**Authentication:** JWT Bearer Token required\n\n**Route:** `POST /auth/change-password`\n\n**Request Body:**\n- `currentPassword` (required): Current password for verification\n- `newPassword` (required): New password (min 8 characters)"
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Logout the current user (invalidates token on client side).\n\n**Authentication:** JWT Bearer Token required\n\n**Route:** `POST /auth/logout`"
+          },
+          "response": []
+        }
+      ],
+      "description": "Authentication endpoints for user registration, login, and profile management.\n\n**Total: 6 endpoints**\n\n**Authentication Type:** JWT Bearer Token (after login)"
+    },
+    {
+      "name": "02. Projects (JWT)",
+      "item": [
+        {
+          "name": "Create Project",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data._id) {",
+                  "        pm.collectionVariables.set('projectId', jsonData.data._id);",
+                  "        console.log('Project ID saved:', jsonData.data._id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"My App Assets\",\n  \"description\": \"Storage for my application assets\",\n  \"provider\": \"aws\",\n  \"providerConfig\": {\n    \"bucket\": \"my-app-bucket\",\n    \"region\": \"us-east-1\",\n    \"accessKeyId\": \"AKIAXXXXXXXXXXXXXXXX\",\n    \"secretAccessKey\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\n    \"basePath\": \"uploads/\"\n  },\n  \"allowedMimeTypes\": [\"image/*\", \"video/*\", \"application/pdf\"],\n  \"maxFileSizeBytes\": 104857600\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/projects",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "projects"
+              ]
+            },
+            "description": "Create a new project with storage provider configuration.\n\n**Authentication:** JWT Bearer Token required\n\n**Route:** `POST /projects`\n\n**Request Body:**\n- `name` (required): Project name\n- `description` (optional): Project description\n- `provider` (required): Storage provider ('aws' or 'cloudinary')\n- `providerConfig` (required): Provider-specific configuration\n- `allowedMimeTypes` (optional): Array of allowed MIME types\n- `maxFileSizeBytes` (optional): Maximum file size in bytes"
+          },
+          "response": []
+        },
+        {
+          "name": "List Projects",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/projects?includeInactive=false",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "projects"
+              ],
+              "query": [
+                {
+                  "key": "includeInactive",
+                  "value": "false",
+                  "description": "Include inactive projects"
+                }
+              ]
+            },
+            "description": "List all projects for the authenticated user.\n\n**Authentication:** JWT Bearer Token required\n\n**Route:** `GET /projects`\n\n**Query Parameters:**\n- `includeInactive` (optional): Include inactive projects (default: false)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Project by Slug",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/projects/slug/my-app-assets",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "projects",
+                "slug",
+                "my-app-assets"
+              ]
+            },
+            "description": "Get a specific project by its URL-friendly slug.\n\n**Authentication:** JWT Bearer Token required\n\n**Route:** `GET /projects/slug/:slug`\n\n**Path Parameters:**\n- `slug`: Project slug (auto-generated from name)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Project by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/projects/{{projectId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "projects",
+                "{{projectId}}"
+              ]
+            },
+            "description": "Get a specific project by its ID.\n\n**Authentication:** JWT Bearer Token required\n\n**Route:** `GET /projects/:id`\n\n**Path Parameters:**\n- `id`: Project ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Project",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"My App Assets Updated\",\n  \"description\": \"Updated description\",\n  \"allowedMimeTypes\": [\"image/*\"],\n  \"maxFileSizeBytes\": 52428800,\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/projects/{{projectId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "projects",
+                "{{projectId}}"
+              ]
+            },
+            "description": "Update a project's settings.\n\n**Authentication:** JWT Bearer Token required\n\n**Route:** `PATCH /projects/:id`\n\n**Request Body:**\n- `name` (optional): Updated project name\n- `description` (optional): Updated description\n- `allowedMimeTypes` (optional): Updated allowed MIME types\n- `maxFileSizeBytes` (optional): Updated max file size\n- `isActive` (optional): Enable/disable project"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Provider Config",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"providerConfig\": {\n    \"bucket\": \"new-bucket-name\",\n    \"region\": \"us-west-2\",\n    \"accessKeyId\": \"AKIAXXXXXXXXXXXXXXXX\",\n    \"secretAccessKey\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\n    \"basePath\": \"new-path/\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/projects/{{projectId}}/provider-config",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "projects",
+                "{{projectId}}",
+                "provider-config"
+              ]
+            },
+            "description": "Update a project's storage provider configuration.\n\n**Authentication:** JWT Bearer Token required\n\n**Route:** `PATCH /projects/:id/provider-config`\n\n**Note:** Separate endpoint for security - credentials should be updated explicitly."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Project",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/projects/{{projectId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "projects",
+                "{{projectId}}"
+              ]
+            },
+            "description": "Delete a project permanently.\n\n**Authentication:** JWT Bearer Token required\n\n**Route:** `DELETE /projects/:id`\n\n**Warning:** This will also delete all associated API keys and assets."
+          },
+          "response": []
+        }
+      ],
+      "description": "Project management endpoints. Projects are containers for files with storage provider configuration.\n\n**Total: 7 endpoints**\n\n**Authentication Type:** JWT Bearer Token"
+    },
+    {
+      "name": "03. API Keys (JWT)",
+      "item": [
+        {
+          "name": "Create API Key",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data) {",
+                  "        if (jsonData.data.key) {",
+                  "            pm.collectionVariables.set('apiKey', jsonData.data.key);",
+                  "            console.log('API Key saved (STORE THIS SECURELY!)');",
+                  "        }",
+                  "        if (jsonData.data._id) {",
+                  "            pm.collectionVariables.set('apiKeyId', jsonData.data._id);",
+                  "            console.log('API Key ID saved:', jsonData.data._id);",
+                  "        }",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"projectId\": \"{{projectId}}\",\n  \"name\": \"Production API Key\",\n  \"scopes\": [\"read\", \"upload\", \"delete\"],\n  \"prefix\": \"prod\",\n  \"expiresAt\": null\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api-keys",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api-keys"
+              ]
+            },
+            "description": "Create a new API key for a project.\n\n**Authentication:** JWT Bearer Token required\n\n**Route:** `POST /api-keys`\n\n**Request Body:**\n- `projectId` (required): Project this key belongs to\n- `name` (required): Descriptive name\n- `scopes` (required): Array of permissions ['read', 'upload', 'delete']\n- `prefix` (optional): Key prefix for identification\n- `expiresAt` (optional): Expiration date (null = never)\n\n**⚠️ IMPORTANT:** The full API key is only returned ONCE upon creation!"
+          },
+          "response": []
+        },
+        {
+          "name": "List API Keys",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api-keys?projectId={{projectId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api-keys"
+              ],
+              "query": [
+                {
+                  "key": "projectId",
+                  "value": "{{projectId}}",
+                  "description": "Filter by project ID (optional)"
+                }
+              ]
+            },
+            "description": "List all API keys for the authenticated user.\n\n**Authentication:** JWT Bearer Token required\n\n**Route:** `GET /api-keys`\n\n**Query Parameters:**\n- `projectId` (optional): Filter keys by project ID\n\n**Note:** Full key values are NOT returned, only metadata."
+          },
+          "response": []
+        },
+        {
+          "name": "Get API Key by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api-keys/{{apiKeyId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api-keys",
+                "{{apiKeyId}}"
+              ]
+            },
+            "description": "Get details of a specific API key.\n\n**Authentication:** JWT Bearer Token required\n\n**Route:** `GET /api-keys/:id`\n\n**Note:** Full key value is NOT returned."
+          },
+          "response": []
+        },
+        {
+          "name": "Deactivate API Key",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api-keys/{{apiKeyId}}/deactivate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api-keys",
+                "{{apiKeyId}}",
+                "deactivate"
+              ]
+            },
+            "description": "Temporarily deactivate an API key.\n\n**Authentication:** JWT Bearer Token required\n\n**Route:** `PATCH /api-keys/:id/deactivate`\n\nDeactivated keys will be rejected when used. This is reversible."
+          },
+          "response": []
+        },
+        {
+          "name": "Reactivate API Key",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api-keys/{{apiKeyId}}/reactivate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api-keys",
+                "{{apiKeyId}}",
+                "reactivate"
+              ]
+            },
+            "description": "Reactivate a previously deactivated API key.\n\n**Authentication:** JWT Bearer Token required\n\n**Route:** `PATCH /api-keys/:id/reactivate`"
+          },
+          "response": []
+        },
+        {
+          "name": "Rotate API Key",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.key) {",
+                  "        pm.collectionVariables.set('apiKey', jsonData.data.key);",
+                  "        console.log('New API Key saved (STORE THIS SECURELY!)');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api-keys/{{apiKeyId}}/rotate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api-keys",
+                "{{apiKeyId}}",
+                "rotate"
+              ]
+            },
+            "description": "Rotate an API key (generate new secret, invalidate old one).\n\n**Authentication:** JWT Bearer Token required\n\n**Route:** `POST /api-keys/:id/rotate`\n\n**⚠️ IMPORTANT:** The new key is only returned ONCE. The old key is immediately invalidated."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete API Key",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api-keys/{{apiKeyId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api-keys",
+                "{{apiKeyId}}"
+              ]
+            },
+            "description": "Permanently delete an API key.\n\n**Authentication:** JWT Bearer Token required\n\n**Route:** `DELETE /api-keys/:id`\n\n**Warning:** This action is irreversible."
+          },
+          "response": []
+        }
+      ],
+      "description": "API Key management endpoints. API keys are used for upload and asset operations.\n\n**Total: 7 endpoints**\n\n**Authentication Type:** JWT Bearer Token\n\n**Available Scopes:**\n- `read`: View and list assets, get signed URLs\n- `upload`: Upload new files, update assets\n- `delete`: Delete assets"
+    },
+    {
+      "name": "04. Uploads (API Key)",
+      "item": [
+        {
+          "name": "Generate Presigned Upload URL",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.assetId) {",
+                  "        pm.collectionVariables.set('assetId', jsonData.data.assetId);",
+                  "        console.log('Asset ID saved:', jsonData.data.assetId);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"filename\": \"profile-photo.jpg\",\n  \"contentType\": \"image/jpeg\",\n  \"fileSize\": 1048576,\n  \"category\": \"avatars\",\n  \"visibility\": \"public\",\n  \"metadata\": {\n    \"userId\": \"user123\",\n    \"purpose\": \"profile\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/uploads/presign",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "uploads",
+                "presign"
+              ]
+            },
+            "description": "Generate a presigned URL for direct file upload to cloud storage.\n\n**Authentication:** API Key with `upload` scope (X-API-Key header)\n\n**Route:** `POST /uploads/presign`\n\n**⚠️ SECURITY:** JWT tokens are explicitly REJECTED on this endpoint.\n\n**Request Body:**\n- `filename` (required): Original filename\n- `contentType` (required): MIME type of the file\n- `fileSize` (required): File size in bytes\n- `category` (optional): Category/folder for organization\n- `visibility` (optional): 'public' or 'private' (default: 'private')\n- `metadata` (optional): Custom metadata object\n\n**Response includes:**\n- `uploadUrl`: The presigned URL for PUT upload\n- `expiresAt`: When the URL expires\n- `assetId`: ID of the created asset record\n- `storageRef`: Storage reference/path"
+          },
+          "response": []
+        },
+        {
+          "name": "Confirm Upload",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assetId\": \"{{assetId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/uploads/confirm",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "uploads",
+                "confirm"
+              ]
+            },
+            "description": "Confirm that a file upload has been completed.\n\n**Authentication:** API Key with `upload` scope (X-API-Key header)\n\n**Route:** `POST /uploads/confirm`\n\n**Request Body:**\n- `assetId` (required): The asset ID returned from the presign endpoint\n\n**Note:** This is optional but recommended. It updates the asset status."
+          },
+          "response": []
+        },
+        {
+          "name": "Confirm Upload Copy",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "file",
+              "file": {
+                "src": "/C:/Users/kumar/OneDrive/Pictures/profile-photo.jpg"
+              }
+            },
+            "url": {
+              "raw": "https://appmitra-media-manager-s3.s3.ap-south-1.amazonaws.com/uploads/my-app-assets/1769704831545/9b631ea1-c5f4-4d35-afa0-d357291c1123.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAYMKWDLUDJFTYRWDW%2F20260129%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Date=20260129T164031Z&X-Amz-Expires=300&X-Amz-Signature=6da342a5674439b39f789f1e7a6622d1915aae28380e43990f05349f9502f77f&X-Amz-SignedHeaders=content-length%3Bhost&x-amz-acl=public-read&x-amz-checksum-crc32=AAAAAA%3D%3D&x-amz-meta-originalname=profile-photo.jpg&x-amz-meta-purpose=profile&x-amz-meta-uploadedat=2026-01-29T16%3A40%3A31.545Z&x-amz-meta-userid=user123&x-amz-sdk-checksum-algorithm=CRC32&x-id=PutObject",
+              "protocol": "https",
+              "host": [
+                "appmitra-media-manager-s3",
+                "s3",
+                "ap-south-1",
+                "amazonaws",
+                "com"
+              ],
+              "path": [
+                "uploads",
+                "my-app-assets",
+                "1769704831545",
+                "9b631ea1-c5f4-4d35-afa0-d357291c1123.jpg"
+              ],
+              "query": [
+                {
+                  "key": "X-Amz-Algorithm",
+                  "value": "AWS4-HMAC-SHA256"
+                },
+                {
+                  "key": "X-Amz-Content-Sha256",
+                  "value": "UNSIGNED-PAYLOAD"
+                },
+                {
+                  "key": "X-Amz-Credential",
+                  "value": "AKIAYMKWDLUDJFTYRWDW%2F20260129%2Fap-south-1%2Fs3%2Faws4_request"
+                },
+                {
+                  "key": "X-Amz-Date",
+                  "value": "20260129T164031Z"
+                },
+                {
+                  "key": "X-Amz-Expires",
+                  "value": "300"
+                },
+                {
+                  "key": "X-Amz-Signature",
+                  "value": "6da342a5674439b39f789f1e7a6622d1915aae28380e43990f05349f9502f77f"
+                },
+                {
+                  "key": "X-Amz-SignedHeaders",
+                  "value": "content-length%3Bhost"
+                },
+                {
+                  "key": "x-amz-acl",
+                  "value": "public-read"
+                },
+                {
+                  "key": "x-amz-checksum-crc32",
+                  "value": "AAAAAA%3D%3D"
+                },
+                {
+                  "key": "x-amz-meta-originalname",
+                  "value": "profile-photo.jpg"
+                },
+                {
+                  "key": "x-amz-meta-purpose",
+                  "value": "profile"
+                },
+                {
+                  "key": "x-amz-meta-uploadedat",
+                  "value": "2026-01-29T16%3A40%3A31.545Z"
+                },
+                {
+                  "key": "x-amz-meta-userid",
+                  "value": "user123"
+                },
+                {
+                  "key": "x-amz-sdk-checksum-algorithm",
+                  "value": "CRC32"
+                },
+                {
+                  "key": "x-id",
+                  "value": "PutObject"
+                }
+              ]
+            },
+            "description": "Confirm that a file upload has been completed.\n\n**Authentication:** API Key with `upload` scope (X-API-Key header)\n\n**Route:** `POST /uploads/confirm`\n\n**Request Body:**\n- `assetId` (required): The asset ID returned from the presign endpoint\n\n**Note:** This is optional but recommended. It updates the asset status."
+          },
+          "response": []
+        }
+      ],
+      "description": "Upload endpoints for generating presigned URLs.\n\n**Total: 2 endpoints**\n\n**Authentication Type:** API Key (X-API-Key header)\n\n**Required Scope:** `upload`\n\n**⚠️ CRITICAL SECURITY:** JWT tokens are NOT accepted on these endpoints. Only API keys are allowed."
+    },
+    {
+      "name": "05. Assets (API Key)",
+      "item": [
+        {
+          "name": "List Assets",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/assets?category=avatars&visibility=public&page=1&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "assets"
+              ],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "avatars",
+                  "description": "Filter by category (optional)"
+                },
+                {
+                  "key": "visibility",
+                  "value": "public",
+                  "description": "Filter by visibility: public/private (optional)"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number (optional, default: 1)"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Items per page (optional, default: 20, max: 100)"
+                }
+              ]
+            },
+            "description": "List all assets for the project.\n\n**Authentication:** API Key with `read` scope (X-API-Key header)\n\n**Route:** `GET /assets`\n\n**Query Parameters:**\n- `category` (optional): Filter by category\n- `visibility` (optional): Filter by 'public' or 'private'\n- `page` (optional): Page number (default: 1)\n- `limit` (optional): Items per page (default: 20, max: 100)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Asset by Storage Ref",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/assets/ref/uploads%2Favatars%2Fprofile-photo.jpg",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "assets",
+                "ref",
+                "uploads%2Favatars%2Fprofile-photo.jpg"
+              ]
+            },
+            "description": "Get a specific asset by its storage reference (path).\n\n**Authentication:** API Key with `read` scope (X-API-Key header)\n\n**Route:** `GET /assets/ref/:storageRef`\n\n**Path Parameters:**\n- `storageRef`: URL-encoded storage reference/path\n\n**Note:** The storage ref must be URL-encoded (e.g., `uploads/image.jpg` → `uploads%2Fimage.jpg`)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Asset by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data._id) {",
+                  "        pm.collectionVariables.set('assetId', jsonData.data._id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/assets/{{assetId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "assets",
+                "{{assetId}}"
+              ]
+            },
+            "description": "Get a specific asset by its ID.\n\n**Authentication:** API Key with `read` scope (X-API-Key header)\n\n**Route:** `GET /assets/:id`\n\n**Path Parameters:**\n- `id`: Asset ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Signed URL",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/assets/{{assetId}}/signed-url?expiresIn=3600",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "assets",
+                "{{assetId}}",
+                "signed-url"
+              ],
+              "query": [
+                {
+                  "key": "expiresIn",
+                  "value": "3600",
+                  "description": "URL expiration in seconds (default: 3600, max: 604800)"
+                }
+              ]
+            },
+            "description": "Get a temporary signed URL for accessing a private asset.\n\n**Authentication:** API Key with `read` scope (X-API-Key header)\n\n**Route:** `GET /assets/:id/signed-url`\n\n**Path Parameters:**\n- `id`: Asset ID\n\n**Query Parameters:**\n- `expiresIn` (optional): URL expiration in seconds (default: 3600, max: 604800)\n\n**Response:**\n- `signedUrl`: Temporary URL for accessing the file\n- `expiresAt`: When the URL expires"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Asset Visibility",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"visibility\": \"private\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/assets/{{assetId}}/visibility",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "assets",
+                "{{assetId}}",
+                "visibility"
+              ]
+            },
+            "description": "Update an asset's visibility setting.\n\n**Authentication:** API Key with `upload` scope (X-API-Key header)\n\n**Route:** `PATCH /assets/:id/visibility`\n\n**Request Body:**\n- `visibility` (required): 'public' or 'private'"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Asset",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/assets/{{assetId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "assets",
+                "{{assetId}}"
+              ]
+            },
+            "description": "Delete an asset permanently.\n\n**Authentication:** API Key with `delete` scope (X-API-Key header)\n\n**Route:** `DELETE /assets/:id`\n\n**Warning:** This deletes both the asset record and the file from storage."
+          },
+          "response": []
+        }
+      ],
+      "description": "Asset management endpoints for viewing, modifying, and deleting uploaded files.\n\n**Total: 6 endpoints**\n\n**Authentication Type:** API Key (X-API-Key header)\n\n**Required Scopes:**\n- `read`: List, view, get signed URLs\n- `upload`: Update visibility\n- `delete`: Delete assets"
+    },
+    {
+      "name": "06. Usage (JWT)",
+      "item": [
+        {
+          "name": "Get Storage Usage",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usage/storage?projectId={{projectId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usage",
+                "storage"
+              ],
+              "query": [
+                {
+                  "key": "projectId",
+                  "value": "{{projectId}}",
+                  "description": "Filter by project ID (optional)"
+                }
+              ]
+            },
+            "description": "Get current storage usage.\n\n**Authentication:** JWT Bearer Token required\n\n**Route:** `GET /usage/storage`\n\n**Query Parameters:**\n- `projectId` (optional): Filter by project ID\n\n**Response includes:**\n- Total bytes used\n- Breakdown by project/category"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Bandwidth Usage",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usage/bandwidth?month=2026-01&projectId={{projectId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usage",
+                "bandwidth"
+              ],
+              "query": [
+                {
+                  "key": "month",
+                  "value": "2026-01",
+                  "description": "Month in YYYY-MM format (optional, default: current month)"
+                },
+                {
+                  "key": "projectId",
+                  "value": "{{projectId}}",
+                  "description": "Filter by project ID (optional)"
+                }
+              ]
+            },
+            "description": "Get bandwidth usage for a specific month.\n\n**Authentication:** JWT Bearer Token required\n\n**Route:** `GET /usage/bandwidth`\n\n**Query Parameters:**\n- `month` (optional): Month in YYYY-MM format (default: current month)\n- `projectId` (optional): Filter by project ID\n\n**Response includes:**\n- Total bytes transferred\n- Upload vs download breakdown"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Bandwidth History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usage/bandwidth/history?months=6",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usage",
+                "bandwidth",
+                "history"
+              ],
+              "query": [
+                {
+                  "key": "months",
+                  "value": "6",
+                  "description": "Number of months to include (optional, default: 6, max: 12)"
+                }
+              ]
+            },
+            "description": "Get bandwidth usage history over multiple months.\n\n**Authentication:** JWT Bearer Token required\n\n**Route:** `GET /usage/bandwidth/history`\n\n**Query Parameters:**\n- `months` (optional): Number of months to include (default: 6, max: 12)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Usage Summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usage/summary",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usage",
+                "summary"
+              ]
+            },
+            "description": "Get an aggregated usage summary across all projects.\n\n**Authentication:** JWT Bearer Token required\n\n**Route:** `GET /usage/summary`\n\n**Response includes:**\n- Total storage used\n- Current month bandwidth\n- Asset count\n- Breakdown by project"
+          },
+          "response": []
+        }
+      ],
+      "description": "Usage tracking endpoints for monitoring storage and bandwidth consumption.\n\n**Total: 4 endpoints**\n\n**Authentication Type:** JWT Bearer Token"
+    },
+    {
+      "name": "07. Billing (JWT)",
+      "item": [
+        {
+          "name": "Get All Invoices",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/billing/invoices",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "billing",
+                "invoices"
+              ]
+            },
+            "description": "Get all invoices for the authenticated user.\n\n**Authentication:** JWT Bearer Token required\n\n**Route:** `GET /billing/invoices`\n\n**Response:** List of all invoices with status and amounts"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Current Estimate",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/billing/estimate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "billing",
+                "estimate"
+              ]
+            },
+            "description": "Get the current billing estimate for the month.\n\n**Authentication:** JWT Bearer Token required\n\n**Route:** `GET /billing/estimate`\n\n**Response includes:**\n- Estimated costs based on current usage\n- Breakdown by storage and bandwidth"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Invoice by Month",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/billing/invoices/month/2026-01",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "billing",
+                "invoices",
+                "month",
+                "2026-01"
+              ]
+            },
+            "description": "Get the invoice for a specific month.\n\n**Authentication:** JWT Bearer Token required\n\n**Route:** `GET /billing/invoices/month/:month`\n\n**Path Parameters:**\n- `month`: Month in YYYY-MM format"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Invoice by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data._id) {",
+                  "        pm.collectionVariables.set('invoiceId', jsonData.data._id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/billing/invoices/{{invoiceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "billing",
+                "invoices",
+                "{{invoiceId}}"
+              ]
+            },
+            "description": "Get a specific invoice by ID.\n\n**Authentication:** JWT Bearer Token required\n\n**Route:** `GET /billing/invoices/:id`\n\n**Response:** Detailed invoice with line items"
+          },
+          "response": []
+        },
+        {
+          "name": "Generate Invoice",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"month\": \"2026-01\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/billing/invoices/generate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "billing",
+                "invoices",
+                "generate"
+              ]
+            },
+            "description": "Generate an invoice for a specific month.\n\n**Authentication:** JWT Bearer Token required\n\n**Route:** `POST /billing/invoices/generate`\n\n**Request Body:**\n- `month` (required): Month in YYYY-MM format\n\n**Note:** Invoices are typically auto-generated at month end."
+          },
+          "response": []
+        },
+        {
+          "name": "Mark Invoice as Paid",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/billing/invoices/{{invoiceId}}/pay",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "billing",
+                "invoices",
+                "{{invoiceId}}",
+                "pay"
+              ]
+            },
+            "description": "Mark an invoice as paid.\n\n**Authentication:** JWT Bearer Token required\n\n**Route:** `POST /billing/invoices/:id/pay`\n\n**Note:** For testing/admin purposes. In production, payment status would be updated via webhook."
+          },
+          "response": []
+        }
+      ],
+      "description": "Billing and invoice management endpoints.\n\n**Total: 6 endpoints**\n\n**Authentication Type:** JWT Bearer Token"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "jwtToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "apiKey",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "projectId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "apiKeyId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "assetId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "invoiceId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "default"
+    }
+  ]
+}
